@@ -5,4 +5,7 @@ Alright programming, some basic ideas:
 
 Look at the GitHub Tutorial if necessary, and make sure to DOCUMENT ALL CODE CHANGES!!!!
 
+Current Version:
+AS3 Test 04_NPCs (Layering) - Layers NPCs correctly in front and behind the player.
+
 

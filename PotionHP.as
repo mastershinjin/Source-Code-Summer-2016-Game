@@ -1,0 +1,1 @@
+﻿package  {		public class PotionHP extends Item{		private var healPoints:int;		//Constructor		public function PotionHP(nm:String, n:int, h:int) {			super(nm, n);			healPoints = h;		}				public function getHealPoints():int{			return healPoints;		}	}	}

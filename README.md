@@ -5,4 +5,6 @@ Alright programming, some basic ideas:
 
 Look at the GitHub Tutorial if necessary, and make sure to DOCUMENT ALL CODE CHANGES!!!!
 
+pls....also Jason put all za files here and not Basecamp for now
+
 

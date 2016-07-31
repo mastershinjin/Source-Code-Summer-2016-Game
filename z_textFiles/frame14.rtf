@@ -1,0 +1,76 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 //AREA 04 - heroHouse2\
+\
+stop();\
+\
+//Sets area\
+currArea = "heroHouse2";\
+\
+areaIsHostile = false;\
+\
+//Sets colliders and NPCs\
+removeBoxes();\
+\
+boxArray = new Array(new BoxCollider(0, 0, 0, 0),\
+					 \
+					 new BoxCollider(340, 101, 0, 0),\
+					 \
+					 new BoxCollider(441, 20, 10, 443),\
+					 new BoxCollider(355, 20, 10, 85),\
+					 new BoxCollider(19, 101, 344, 10),\
+					 new BoxCollider(19, 101, 10, 362),\
+					 new BoxCollider(19, 463, 196, 50),\
+					 new BoxCollider(260, 463, 181, 50),\
+					 \
+					new NPC(new NPCData(4, 350, -50, 40, 40, false, new Array("Stop walking out of bounds!")))\
+					 \
+					 \
+					 );\
+					 \
+addBoxes();\
+\
+//Place boxes in the correct place\
+if(isBattleReturn)\{\
+	//Move box colliders back\
+	incrBoxCoords(boxSaver.x, boxSaver.y);\
+	isBattleReturn = false;\
+\}\
+else if(isLoadFromSave)\{\
+	incrBoxCoords(boxSaver.x, boxSaver.y);\
+	isLoadFromSave = false;\
+\}\
+else if(prevArea == "")\{\
+	incrBoxCoords(0, 0);\
+\}\
+else if(prevArea == "heroHouse1")\{\
+	incrBoxCoords(-110, 150);\
+	\
+	//Sets new position to be facing in\
+	properPlayerPosition = 3\
+\}\
+\
+\
+//Area switch\
+function checkSwitchFromHeroHouse2(event:Event)\{\
+	\
+	if(currArea == "heroHouse2")\{\
+		if(boxArray[1].x < player.x && boxArray[1].y > player.y + player.height)\{\
+			prevArea = this.currentLabel;\
+			this.gotoAndStop("heroHouse1");\
+		\}\
+	\}\
+	else\{\
+		stage.removeEventListener(Event.ENTER_FRAME, checkSwitchFromHeroHouse2);\
+	\}\
+\}\
+\
+stage.addEventListener(Event.ENTER_FRAME, checkSwitchFromHeroHouse2);\
+\
+\
+//Fades in\
+overlayBlack.gotoAndPlay("fadeIn");}

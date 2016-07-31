@@ -1,0 +1,1 @@
+﻿package inven{		public class Equipment extends Item{		private var specialPoints:int;		private var stats:Array;		//Constructor		public function Equipment(nm:String, n:int, s:Array) {			super(nm, n);			stats = s;		}				public function getStats():Array{			return stats;		}	}	}

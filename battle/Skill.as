@@ -1,0 +1,1 @@
+﻿package battle{		//Defines skills that take sp points		public class Skill {				public var skillName:String;		public var cost:int;		public var damage:int;		public var heal:int;				public function Skill(nm:String, c:int, d:int, h:int) {			skillName = nm;			cost = c;			damage = d;			heal = h;		}	}	}

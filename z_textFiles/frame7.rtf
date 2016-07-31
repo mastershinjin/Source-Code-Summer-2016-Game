@@ -1,0 +1,305 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 import collision.BoxCollider;\
+import battle.FighterInfo;\
+import inven.Item;\
+import inven.Inventory;\
+import inven.Armor;\
+import battle.Skill;\
+import collision.GameEvent;\
+\
+//Saving mechanics\
+\
+/*NOTE:\
+CANNOT SAVE CUSTOM OBJECTS!!!\
+\
+ally data and stats will be saved with arrays containing the simple data instead\
+ally data wil be loaded using arrays of ints, bools, etc.\
+\
+Arrays CAN be saved\
+*/\
+\
+//!!!!!!!!!!!!!!!!MAKE SURE TO SAVE GAME EVENT DATA!!!!!!!!!!!!!!!\
+\
+\
+//Creates save data variable\
+var saveData:SharedObject = SharedObject.getLocal("mySave");;\
+\
+var isLoadFromSave:Boolean = false;\
+\
+if(saveData.data.isSaveExist)\{\
+	trace("Loading from save...");\
+	\
+	boxSaver = new BoxCollider(0, 0, 0, 0);\
+	boxSaver.x = saveData.data.saveBoxX;\
+	boxSaver.y = saveData.data.saveBoxY;\
+	\
+	currArea = saveData.data.currArea;\
+	prevArea = saveData.data.prevArea;\
+	\
+	compassDir = saveData.data.compassDir;\
+	\
+	//Loads NPC talked to data\
+	if(saveData.data.isTalkedToArray != null)\{\
+		trace("Loaded talk array");\
+		var isTalkedToArray:Array = saveData.data.isTalkedToArray;\
+		for(var i:int = 0; i < isTalkedToArray.length; i++)\{\
+			NPCDataList[i].hasTalkedToMe = isTalkedToArray[i];\
+		\}\
+	\}\
+	\
+	//Loads gifting bools\
+	if(saveData.data.isGiftedArray != null)\{\
+		var isGiftedArray:Array = saveData.data.isGiftedArray;\
+		for(var i2:int = 0; i2 < NPCDataList.length; i2++)\{\
+			NPCDataList[i2].giftGiven = isGiftedArray[i2];\
+		\}\
+	\}\
+	\
+	//Loads inventory data\
+	if(true && saveData.data.itemNames != null && saveData.data.itemNum != null)\{\
+		trace("Loaded inventory");\
+		//itemList = new Array(10);\
+		\
+		var itemID:Array = saveData.data.itemID;\
+		var itemNames:Array = saveData.data.itemNames;\
+		var itemNum:Array = saveData.data.itemNum;\
+		\
+		var hpHeal:Array = saveData.data.hpHeal;\
+		var spHeal:Array = saveData.data.spHeal;\
+		var reviveHeal:Array = saveData.data.reviveHeal;\
+		var equipStats:Array = saveData.data.equipStats;\
+		\
+		itemList = new Array();\
+		for(var j:int = 0; j < itemNames.length; j++)\{\
+			\
+			//Recreates items\
+			if(itemID[j] == 1)\{\
+				itemList[j] = new Potion(itemNames[j], itemNum[j], hpHeal[j], spHeal[j], reviveHeal[j]);\
+			\}\
+			else if(itemID[j] == 2)\{\
+				itemList[j] = new Armor(itemNames[j], itemNum[j], equipStats[j]);\
+			\}\
+			else if(itemID[j] == 3)\{\
+				itemList[j] = new Weapon(itemNames[j], itemNum[j], equipStats[j]);\
+			\}\
+			else\{\
+				itemList[j] = new Item(itemNames[j], itemNum[j]);\
+			\}\
+			\
+				\
+			\
+		\}\
+		\
+		invMenu = new Inventory(itemList);\
+		invMenu.x = 81;\
+		invMenu.y = 32;\
+	\}\
+	\
+	//Loads player data\
+	if(true && saveData.data.playerSaver != null)\{\
+		trace("Loaded player data");\
+		\
+		var playerSaver:Array = saveData.data.playerSaver;\
+		var playerSkills:Array = saveData.data.playerSkills;\
+		for(var k:int = 0; k < playerSaver.length; k++)\{\
+			\
+			var savedArmor:Armor = new Armor(playerSaver[k][2][0], 1, playerSaver[k][2][1]);\
+			var savedWeapon:Weapon = new Weapon(playerSaver[k][3][0], 1, playerSaver[k][3][1]);\
+			\
+			var fighter:FighterInfo = new FighterInfo(playerSaver[k][0], playerSaver[k][1], savedArmor, savedWeapon);\
+			\
+			//Loads skills\
+			var skillSetData:Array = playerSkills[k]\
+			var tempSkillSet:Array = new Array();\
+			for(var l:int = 0; l < skillSetData.length; l++)\{\
+				tempSkillSet.push(new Skill(skillSetData[l][0], skillSetData[l][1], skillSetData[l][2], skillSetData[l][3]));\
+			\}\
+			\
+			fighter.skillSet = tempSkillSet;\
+			\
+			playerArray[k] = fighter;\
+		\}\
+		\
+		//Sets players\
+		allyArray = new Array();\
+		for(var m:int = 0; m < saveData.data.numAllies; m++)\{\
+			trace(playerArray[m].getName())\
+			allyArray.push(playerArray[m])\
+		\}\
+	\}\
+	//Creates array for battle\
+	aliveAllies = new Array().concat(allyArray);\
+	\
+	//Reset all the boxes\
+	battleOrg = new BattleOrganizer(allyArray, enemyArray);\
+	playerSelect = new SelectBox(battleOrg.getAllyNames());\
+	playerSelect.x = 10;\
+	playerSelect.y = 200;\
+	targetAllyBox = new SelectBox(battleOrg.getAllyNames());\
+	overworldPlayerSelect = new SelectBox(battleOrg.getAllyNames());\
+	\
+	\
+	//GAME EVENT LOADING ***** ADD MORE AS EVENTS GET MORE *****\
+	mountGateEvent = new GameEvent(saveData.data.mountGateEvent)\
+	goToShidakEvent = new GameEvent(saveData.data.goToShidakEvent)\
+	\
+	\
+	isLoadFromSave = true;\
+\
+	gotoAndPlay(currArea);\
+	\
+\}\
+else\{\
+	gotoAndPlay("mountView");\
+\}\
+\
+//Saves game when mouse clicks save button\
+function saveGame(event:MouseEvent):void\{\
+	\
+	saveData.data.isSaveExist = true;\
+	\
+	saveData.data.saveBoxX = boxArray[0].x;\
+	saveData.data.saveBoxY = boxArray[0].y;\
+	saveData.data.compassDir = compassDir;\
+	\
+	saveData.data.currArea = currArea;\
+	saveData.data.prevArea = prevArea;\
+	\
+	//Saves NPC bools\
+	var isTalkedToArray:Array = new Array();\
+	for(var i:int = 0; i < NPCDataList.length; i++)\{\
+		isTalkedToArray.push(NPCDataList[i].hasTalkedToMe);\
+	\}\
+	saveData.data.isTalkedToArray = isTalkedToArray;\
+	\
+	//Saves gifting bools\
+	var isGiftedArray:Array = new Array();\
+	for(var i2:int = 0; i2 < NPCDataList.length; i2++)\{\
+		isGiftedArray.push(NPCDataList[i2].giftGiven);\
+	\}\
+	saveData.data.isGiftedArray = isGiftedArray;\
+	\
+	//Saves inventory data\
+	/*\
+	0 = Item\
+	1 = Potion\
+	2 = Armor\
+	3 = Weapon\
+	*/\
+	var itemID:Array = new Array();\
+	var itemNames:Array = new Array();\
+	var itemNum:Array = new Array();\
+	\
+	var hpHeal:Array = new Array();\
+	var spHeal:Array = new Array();\
+	var reviveHeal:Array = new Array();\
+	var equipStats:Array = new Array();\
+	\
+	for(var j:int = 0; j < itemList.length; j++)\{\
+		itemNames.push(itemList[j].getName());\
+		itemNum.push(itemList[j].getNum());\
+		\
+		//Records the type of item\
+		if(itemList[j] is Potion)\{\
+			itemID.push(1);\
+			\
+			equipStats.push(0)\
+			\
+			hpHeal.push(itemList[j].getHPRecv());\
+			spHeal.push(itemList[j].getSPRecv());\
+			reviveHeal.push(itemList[j].getRevive());\
+		\}\
+		else if(itemList[j] is Armor)\{\
+			itemID.push(2);\
+			\
+			equipStats.push(itemList[j].getStats());\
+			\
+			hpHeal.push(0);\
+			spHeal.push(0);\
+		\}\
+		else if(itemList[j] is Weapon)\{\
+			itemID.push(3);\
+			\
+			equipStats.push(itemList[j].getStats());\
+			\
+			hpHeal.push(0);\
+			spHeal.push(0);\
+		\}\
+		else\{\
+			itemID.push(0);\
+			\
+			hpHeal.push(0)\
+			spHeal.push(0)\
+			equipStats.push(0)\
+		\}\
+		\
+	\}\
+	\
+	saveData.data.numAllies = allyArray.length\
+	\
+	trace(saveData.data.numAllies)\
+	\
+	saveData.data.itemID = itemID;\
+	saveData.data.itemNames = itemNames;\
+	saveData.data.itemNum = itemNum;\
+	\
+	saveData.data.hpHeal = hpHeal;\
+	saveData.data.spHeal = spHeal;\
+	saveData.data.reviveHeal = reviveHeal;\
+	saveData.data.equipStats = equipStats;\
+	\
+	\
+	//Saves player stats and armor\
+	/*\
+	0 - name\
+	1 - stats\
+	2 - armor info (array)\
+	3 - weapon info (array)\
+	*/\
+	//playerArray = new Array(player1, player2, player3);\
+	var playerSaver:Array = new Array();\
+	var playerSkills:Array = new Array();\
+	for(var k:int = 0; k < playerArray.length; k++)\{\
+		\
+		var armorData:Array = new Array(playerArray[k].getArmor().getName(), playerArray[k].getArmor().getStats());\
+		var weaponData:Array = new Array(playerArray[k].getWeapon().getName(), playerArray[k].getWeapon().getStats())\
+		\
+		playerSaver.push(new Array(playerArray[k].getName(), playerArray[k].getStats(), armorData, weaponData));\
+		\
+		//Saves skills\
+		var tempSkillSet:Array = playerArray[k].skillSet;\
+		var skillSetData:Array = new Array();\
+		for(var l:int = 0; l < tempSkillSet.length; l++)\{\
+			skillSetData.push(new Array(tempSkillSet[l].skillName, tempSkillSet[l].cost, tempSkillSet[l].damage, tempSkillSet[l].heal));\
+		\}\
+		\
+		playerSkills.push(skillSetData);\
+	\}\
+	\
+	saveData.data.playerSkills = playerSkills;\
+	\
+	saveData.data.playerSaver = playerSaver;\
+	\
+	\
+	//GAME EVENT SAVING ***** ADD MORE AS EVENTS GET MORE *****\
+	saveData.data.mountGateEvent = mountGateEvent.getEvent();\
+	saveData.data.goToShidakEvent = goToShidakEvent.getEvent();\
+	\
+	saveData.flush();\
+\}\
+\
+\
+//Deletes save file\
+function deleteGame(event:Event):void\{\
+	saveData.data.isSaveExist = false;\
+	saveData.flush();\
+\}\
+\
+saveButton.addEventListener(MouseEvent.CLICK, saveGame);\
+\
+deleteButton.addEventListener(MouseEvent.CLICK, deleteGame);}

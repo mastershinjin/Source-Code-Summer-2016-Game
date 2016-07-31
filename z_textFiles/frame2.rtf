@@ -1,0 +1,87 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 LucidaGrande;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 import flash.events.Event;\
+import flash.utils.Timer;\
+import collision.NPC;\
+import collision.GameEvent;\
+\
+\
+var itemList:Array = new Array(new Potion("Potion", 9999, 10, 0, false),\
+							   new Potion("Elixer", 1000, 20, 10, false),\
+							   new Item("Pokedex", 5),\
+							   new Weapon("Toby Fox", 1, new Array(0, 0, 9999, 9999, 9999, 9999, 9999, 9999)),\
+							   new Item("Woof 'n Tuff Dawg", 7),\
+							   new Item("Instant Noodle", 300),\
+							   new Armor("Chain armor", 1, new Array(0, 0, 1, 1, 1, 1, 1, 1)),\
+							   new Armor("Mail armor", 1, new Array(0, 0, 10, 20, 10, 70, 20, 10)),\
+							   new Armor("Armored truck armor", 1, new Array(0, 0, 10, 70, 10, 20, 20, 10)),\
+							   new Weapon("Litvin's 5", -300, new Array(0, 0, -80, -80, -80, -80, -80, -80))\
+							   );\
+\
+//Stores stats\
+/*\
+0 - HP\
+1 - SP\
+2 - Str\
+3 - Def\
+4 - Spd\
+5 - Luck\
+\
+6 - Max HP\
+7 - Max SP\
+\
+\
+*/\
+\
+//Default NPCs\
+var talkingSignDialogue = new Array("Welcome to Shangri La!",\
+									"Yawn.",\
+									"It\'92s so tiresome to say that all the time.",\
+									"Anyway, so what\'92s yer name, young man?",\
+									"Hero?",\
+									"Nice.",\
+									"Sounds like someone carefully thought that one through.",\
+									"Anyway...",\
+									"Right.",\
+									"My job.",\
+									"Sigh.",\
+									"Move with the arrow keys",\
+									"Press z to confirm, interact, and select",\
+									"Press x to deny and close",\
+									"Press q to open the inventory and...",\
+									"Yep",\
+									"That should about it.",\
+									"Have a safe trip down the mountain, lad."\
+									)\
+var talkingSignDialogue2 = new Array("Welcome to Shangri La!");\
+var talkingSign:NPCData = new NPCData(4, 250, 200, 40, 40, false, talkingSignDialogue, talkingSignDialogue2);\
+var npcData_crossRoad_1:NPCData = new NPCData(4, 50, 250, 40, 40, false, new Array("
+\f1 \uc0\u8592 
+\f0  Waterfall", "
+\f1 \uc0\u8593 
+\f0  Mountain View", "
+\f1 \uc0\u8594 
+\f0  Pasture", "
+\f1 \uc0\u8595 
+\f0  The Exit"));\
+var npcData_crossRoad_2:NPCData = new NPCData(4, 280, 390, 40, 40, false, new Array("This is the exit.",\
+																					"Many funny people think it\'92s the path that I\'92m blocking but nope.",\
+																					"This is the exit.",\
+																					"Now",\
+																					"Are ya ready to leave?"\
+																					),\
+																			new Array("Ready to leave?"));\
+var npcData_crossRoad_3:NPCData = new NPCData(5, 493, 150, 50, 50, false, new Array("I have a wonderful gift for you.", "Here, take it!"), new Array("Here, take it!"), false, new Array("I am poor", "No more"));\
+\
+var NPCDataList:Array = new Array(talkingSign, \
+							 	 npcData_crossRoad_1,\
+								 npcData_crossRoad_2,\
+								 npcData_crossRoad_3);\
+\
+//Linked events\
+var mountGateEvent:GameEvent = new GameEvent();\
+var goToShidakEvent:GameEvent = new GameEvent();}

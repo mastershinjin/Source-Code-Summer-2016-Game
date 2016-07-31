@@ -1,0 +1,184 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 import flash.utils.Timer;\
+\
+//STAT SETUP\
+\
+//Skills-----------------------------------------------------------------------\
+var skillWreck = new Skill("Ax Wrecker", 5, 30, 0);\
+var skillMowDown = new Skill("Mow Down", 10, 20, 0);\
+var skillLoaf = new Skill("Kick", 3, 10, 0);\
+\
+\
+//Equipment-----------------------------------------------------------------------\
+\
+var armorStats:Array = new Array(0,\
+								 0,\
+								 0,\
+								 0,\
+								 0,\
+								 0,\
+								 0,\
+								 0);\
+var armor:Equipment = new Armor("Street linens", 1, armorStats);\
+\
+\
+var weaponStats:Array = new Array(0,\
+								 0,\
+								 0,\
+								 0,\
+								 0,\
+								 0,\
+								 0,\
+								 0);\
+var weapon:Equipment = new Weapon("Layman's Ax", 1, weaponStats);\
+\
+\
+//Enemy-----------------------------------------------------------------------\
+\
+\
+var enemyStats:Array = new Array(100,\
+								10,\
+								500,\
+								10,\
+								1,\
+								10,\
+								100,\
+								10);\
+\
+\
+\
+var enemyInfo:FighterInfo = new FighterInfo("Wild Boar", enemyStats, armor, weapon);\
+\
+\
+var enemyStats2:Array = new Array(30,\
+								20,\
+								5,\
+								5,\
+								80,\
+								20,\
+								30,\
+								20);\
+\
+\
+\
+var enemyInfo2:FighterInfo = new FighterInfo("Sanic", enemyStats2, armor, weapon);\
+\
+//Players-----------------------------------------------------------------------\
+\
+var stats1:Array = new Array(50,\
+							10,\
+							5,\
+							5,\
+							10,\
+							20,\
+							50,\
+							10);\
+\
+var player1:FighterInfo = new FighterInfo("Herodotus", stats1, armor, weapon);\
+player1.skillSet = new Array(skillWreck, skillLoaf);\
+\
+var stats2:Array = new Array(30,\
+							60,\
+							20,\
+							5,\
+							5,\
+							15,\
+							30,\
+							60);\
+\
+var player2:FighterInfo = new FighterInfo("Mage", stats2, armor, weapon);\
+player2.skillSet = new Array(skillMowDown, skillLoaf);\
+\
+var stats3:Array = new Array(100,\
+							10,\
+							5,\
+							10,\
+							3,\
+							20,\
+							100,\
+							10);\
+\
+var player3:FighterInfo = new FighterInfo("Wall", stats3, armor, weapon);\
+player3.skillSet = new Array(skillLoaf);\
+\
+\
+//Creates array for saving\
+var playerArray:Array = new Array(player1, player2, player3);\
+//Creates ally array for current party\
+var allyArray:Array = new Array(player1, player2);\
+\
+var gotoTimer:Timer = new Timer(1000);\
+gotoTimer.addEventListener(TimerEvent.TIMER, delay);\
+\
+//Goes to battle\
+function gotoBattle():void\{\
+	\
+	playerCanMove = false;\
+	//Fades out\
+	overlayBlack.gotoAndPlay("battleFade");\
+	\
+	boxSaver = boxArray[0];\
+	\
+	//Start delay\
+	gotoTimer.start();\
+\}\
+function delay(event:Event):void\{\
+	gotoAndPlay("battleFrame");\
+	\
+	\
+	eneDispArray = new Array();\
+	setUpEnemyDisp();\
+\
+	playerSelect.setUpTextBoxes();\
+	battleLayer.addChild(playerSelect);\
+	\
+	gotoTimer.stop();\
+\}\
+\
+//Goes back from battle\
+function returnFromBattle():void\{\
+	inBattleMode = false;\
+	isEndBattle = false;\
+	\
+	/*\
+	battleLayer.removeChild(enemyBattleCard);\
+	battleLayer.removeChild(enemyBattleCard2);\
+	*/\
+	\
+	playerSelect.resetItems();\
+	battleLayer.removeChild(playerSelect);\
+	\
+	\
+	removeAllEnemyDisp();\
+	\
+	//If lost battle\
+	if(lostBattle)\{\
+		gotoAndStop("gameOver");\
+	\}\
+	else\{\
+		\
+		winReceived = false;\
+		\
+		playerCanMove = true;\
+		trace(currArea)\
+		\
+		isBattleReturn = true;\
+		\
+		gotoAndStop(currArea);\
+	\}\
+\}\
+\
+//Temporary Test Buttons\
+attackButton.addEventListener(MouseEvent.CLICK, dealDamage);\
+function dealDamage(event:Event):void\{\
+	gotoBattle();\
+\}\
+goBackButton.addEventListener(MouseEvent.CLICK, goBack);\
+function goBack(event:Event):void\{\
+	returnFromBattle();\
+\}}

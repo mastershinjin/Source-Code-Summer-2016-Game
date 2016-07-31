@@ -1,0 +1,1 @@
+﻿package collision {	import flash.events.Event;		public class EventNPC extends NPC {		public function EventNPC(nD:NPCData, gE:GameEvent) {			super(nD, gE)		}				override public function checkIfTalked(event:Event):void{			super.checkIfTalked(event);						if(npcData.hasTalkedToMe && linkedEvent != null){				linkedEvent.setEvent(true);			}		}	}	}

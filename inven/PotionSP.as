@@ -1,0 +1,1 @@
+﻿package inven{		public class PotionSP extends Item{		private var specialPoints:int;		//Constructor		public function PotionSP(nm:String, n:int, h:int) {			super(nm, n);			specialPoints = h;		}				public function getSpecialPoints():int{			return specialPoints;		}	}	}

@@ -1,0 +1,688 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 import inven.SelectBox;\
+\
+//Sets Up BATTLE STUFF\
+\
+//Temp kill hero\
+//allyArray[1].currHP = 3;\
+\
+\
+//Saves the 1st box collider\
+var boxSaver:BoxCollider;\
+var isBattleReturn:Boolean;\
+\
+//Prevents movement\
+playerCanMove = false;\
+\
+//Sets mode to battle\
+inBattleMode = false;\
+\
+//Battle displays - Generate enemy array randomly later\
+var enemyArray:Array = new Array()\
+var battleOrg:BattleOrganizer = new BattleOrganizer(allyArray, enemyArray);\
+var goingFighter:FighterInfo;\
+\
+//TEMPOARARY\
+/*\
+var enemyBattleCard:BattleDisplay = new BattleDisplay(enemyInfo);\
+enemyBattleCard.x = 100;\
+enemyBattleCard.y = 50;\
+enemyBattleCard.scaleX = 1/2\
+enemyBattleCard.scaleY = 1/2\
+\
+var enemyBattleCard2:BattleDisplay = new BattleDisplay(enemyInfo2);\
+enemyBattleCard2.x = 100;\
+enemyBattleCard2.y = 100;\
+enemyBattleCard2.scaleX = 1/2\
+enemyBattleCard2.scaleY = 1/2\
+*/\
+\
+//Current player stat box\
+var statBox:BattleDisplay;\
+\
+//Player selection box\
+var playerSelect:SelectBox = new SelectBox(battleOrg.getAllyNames());\
+playerSelect.x = 10;\
+playerSelect.y = 200;\
+\
+\
+//Movebox\
+var moveBox:SelectBox = new SelectBox(new Array("Attack", "Skill", "Item", "Run"));\
+moveBox.x = 30;\
+moveBox.y = 150;\
+\
+//Skillbox\
+var skillBox:SelectBox;\
+\
+//Item box\
+var battleInvMenu:Inventory = new Inventory(itemList);\
+battleInvMenu.x = 81;\
+battleInvMenu.y = 32;\
+\
+//Targetting boxes\
+var targetAllyBox:SelectBox = new SelectBox(battleOrg.getAllyNames());\
+targetAllyBox.x = 50;\
+targetAllyBox.y = 130;\
+\
+var targetEnemyBox:SelectBox = new SelectBox(battleOrg.getEnemyNames());\
+targetEnemyBox.x = 50;\
+targetEnemyBox.y = 130;\
+\
+\
+//Selection variables\
+var playerIndex:int = 0;\
+playerSelect.freezePointer = true;\
+\
+var isPlayerSelected:Boolean = false;\
+var isSkillChoosing:Boolean = false;\
+var isItemChoosing:Boolean = false;\
+var isTargetChoosing:Boolean = false;\
+\
+//Round variables\
+var roundReady:Boolean = false;\
+var roundGoing:Boolean = false;\
+var fighterChosen:Boolean = false;\
+\
+var isEndBattle:Boolean = false;\
+var runFromBattle:Boolean = false;\
+var lostBattle:Boolean = false;\
+var wonBattle:Boolean = false;\
+var winReceived:Boolean = false;\
+var lossReceived:Boolean = false;\
+\
+var aliveAllies:Array = new Array().concat(allyArray);\
+\
+\
+//Enemy display\
+var eneDispArray:Array = new Array();\
+\
+function checkMoveBox(event:Event):void\{\
+	if(inBattleMode)\{\
+		\
+		//Sync player index with player pointer\
+		if(playerIndex < allyArray.length)\{\
+			playerSelect.setPointerIndex(playerIndex);\
+		\}\
+		\
+		//Z button responses\
+		if(zDown && zCoolDown == 0 && selectCoolDown == 0 && !isPlayingText && !roundGoing)\{\
+			\
+//Player selection---------------------------------------------------------------------------------------------------\
+			if(!isPlayerSelected)\{\
+				\
+				//Display move box\
+				moveBox.setUpTextBoxes();\
+				battleLayer.addChild(moveBox);\
+				\
+				//Sets movebox cursor\
+				if(allyArray[playerSelect.getPointerIndex()].currentMove != -1)\{\
+					moveBox.setPointerIndex(allyArray[playerSelect.getPointerIndex()].currentMove);\
+				\}\
+				\
+				//Display stat box\
+				statBox = new BattleDisplay(allyArray[playerSelect.getPointerIndex()]);\
+				statBox.x = 200;\
+				statBox.y = 300;\
+				statBox.scaleX = 1/2\
+				statBox.scaleY = 1/2\
+				\
+				//Set condition\
+				if(allyArray[playerSelect.getPointerIndex()].isDead)\{\
+					statBox.setCond("dead");\
+				\}\
+				\
+				battleLayer.addChild(statBox);\
+				\
+				//Set cool down\
+				zCoolDown = 5;\
+				\
+				//Set flags\
+				isPlayerSelected = true;\
+				playerSelect.freezePointer = true;\
+			\}\
+			\
+			//Move selection\
+			else if(isPlayerSelected)\{\
+				\
+//TARGETING---------------------------------------------------------------------------------------------------\
+				if(isTargetChoosing)\{\
+					\
+					//If attacking\
+					if(moveBox.getPointerIndex() == 0)\{\
+						\
+						//Set target and target index\
+						allyArray[playerSelect.getPointerIndex()].setTarget(enemyArray[targetEnemyBox.getPointerIndex()], targetEnemyBox.getPointerIndex());\
+						\
+						\
+						trace(allyArray[playerSelect.getPointerIndex()].getName() + " is attacking " + allyArray[playerSelect.getPointerIndex()].target.getName());\
+						\
+						//Reset skill index\
+						allyArray[playerSelect.getPointerIndex()].currentSkillIndex = 0;\
+						\
+						//Exits submenus\
+						exitTargetAttack();\
+						exitMoveSelect();\
+						\
+						//Sets move\
+						allyArray[playerSelect.getPointerIndex()].currentMove = moveBox.getPointerIndex();\
+						\
+						//Move player selecter\
+						playerIndex++;\
+						\
+						//Set cool down\
+						zCoolDown = 5;\
+					\}\
+					//If using skill\
+					else if(moveBox.getPointerIndex() == 1)\{\
+						\
+						//Set target and target index\
+						allyArray[playerSelect.getPointerIndex()].setTarget(enemyArray[targetEnemyBox.getPointerIndex()], targetEnemyBox.getPointerIndex());\
+						\
+						trace(allyArray[playerSelect.getPointerIndex()].getName() + " is using " + allyArray[playerSelect.getPointerIndex()].skillSet[skillBox.getPointerIndex()].skillName + " on " + allyArray[playerSelect.getPointerIndex()].target.getName());\
+					\
+						//Saves skill\
+						allyArray[playerSelect.getPointerIndex()].setSkillByNum(skillBox.getPointerIndex());\
+						\
+						//Exits submenus\
+						exitTargetSkill();\
+						exitSkillSelect();\
+						exitMoveSelect();\
+						\
+						//Move player selecter\
+						playerIndex++;\
+						\
+						//Set cooldown\
+						zCoolDown = 5;\
+						\
+						//Sets move\
+						allyArray[playerSelect.getPointerIndex()].currentMove = 1;\
+					\}\
+					//If using item\
+					else if(moveBox.getPointerIndex() == 2)\{\
+						\
+						//If there is still quantity of some item\
+						if(itemList[battleInvMenu.getPointerIndex()].getNum() > 0)\{\
+							//Set target and target index\
+							allyArray[playerSelect.getPointerIndex()].setTarget(allyArray[targetAllyBox.getPointerIndex()], targetAllyBox.getPointerIndex());\
+							\
+							//Set item\
+							allyArray[playerSelect.getPointerIndex()].setItem(itemList[battleInvMenu.getPointerIndex()], battleInvMenu.getPointerIndex());\
+							\
+							trace(allyArray[playerSelect.getPointerIndex()].getName() + " is using " + itemList[battleInvMenu.getPointerIndex()].getName() + " on " + allyArray[playerSelect.getPointerIndex()].target.getName());\
+						\
+							itemList[allyArray[playerSelect.getPointerIndex()].currentItemIndex].decrement();\
+							\
+							trace(allyArray[playerSelect.getPointerIndex()].currentItem.getName());\
+							\
+							//Exits submenus\
+							exitTargetItem();\
+							exitItemSelect();\
+							exitMoveSelect();\
+							\
+							//Move player selecter\
+							playerIndex++;\
+							\
+							//Sets move\
+							allyArray[playerSelect.getPointerIndex()].currentMove = 2;\
+						\}\
+						else\{\
+							//GET WORKING\
+							//turnOnTextBox(new Array("No more"));\
+						\}\
+						\
+						//Set cooldown\
+						zCoolDown = 5;\
+					\}\
+				\}\
+				\
+//Selecting a skill------------------------------------------------------------------------------------------------\
+				else if(isSkillChoosing)\{\
+					\
+					//Display target box\
+					targetEnemyBox.setUpTextBoxes();\
+					battleLayer.addChild(targetEnemyBox);\
+						\
+					//Set flags\
+					isTargetChoosing = true;\
+					skillBox.freezePointer = true;\
+					\
+					//Set cooldown\
+					zCoolDown = 5;\
+				\}\
+				\
+//Choosing an item------------------------------------------------------------------------------------------------\
+				else if(isItemChoosing)\{\
+					//Allows use of valid items\
+					if(itemList[battleInvMenu.getPointerIndex()] is Potion)\{\
+						\
+						//Display target box\
+						targetAllyBox.setUpTextBoxes();\
+						battleLayer.addChild(targetAllyBox);\
+							\
+						//Set flags\
+						isTargetChoosing = true;\
+						battleInvMenu.freezePointer = true;\
+						\
+						\
+						//Set cool down\
+						zCoolDown = 5;\
+					\}\
+				\}\
+				\
+//Choosing move------------------------------------------------------------------------------------------------\
+				else\{\
+					//If chose attack\
+					if(moveBox.getPointerIndex() == 0)\{\
+						\
+						//Display target box\
+						targetEnemyBox.setUpTextBoxes();\
+						battleLayer.addChild(targetEnemyBox);\
+						\
+						//Set flags\
+						isTargetChoosing = true;\
+						moveBox.freezePointer = true;\
+					\}\
+					//If chose skill\
+					else if(moveBox.getPointerIndex() == 1)\{\
+						\
+						//Display skill box\
+						skillBox = new SelectBox(allyArray[playerSelect.getPointerIndex()].getSkillNames());\
+						skillBox.setUpTextBoxes();\
+						skillBox.x = 50;\
+						skillBox.y = 120;\
+						\
+						battleLayer.addChild(skillBox);\
+						\
+						//Set pointer\
+						skillBox.setPointerIndex(allyArray[playerSelect.getPointerIndex()].currentSkillIndex);\
+						\
+						//Set flags\
+						isSkillChoosing = true;\
+						moveBox.freezePointer = true;\
+						\
+					\}\
+					//If chose item\
+					else if(moveBox.getPointerIndex() == 2)\{\
+						\
+						//Display inv box\
+						battleInvMenu.setUpTextBoxes();\
+						battleLayer.addChild(battleInvMenu);\
+						\
+						\
+						//Set flags\
+						isItemChoosing = true;\
+						moveBox.freezePointer = true;\
+					\}\
+					//If chose run\
+					else if(moveBox.getPointerIndex() == 3)\{\
+						//Move player selecter\
+						playerIndex++;\
+						\
+						//Exist submenu\
+						exitMoveSelect();\
+						\
+						//Sets move\
+						allyArray[playerSelect.getPointerIndex()].currentMove = 3;\
+					\}\
+					\
+					//Set cool down\
+					zCoolDown = 5;\
+				\}\
+			\}\
+		\}\
+		\
+		if(xDown && xCoolDown == 0 && selectCoolDown == 0 && !isPlayingText)\{\
+			//Close out of movebox\
+			if(isPlayerSelected)\{\
+				//Exit target menus\
+				if(isTargetChoosing)\{\
+					//Exit attack\
+					if(moveBox.getPointerIndex() == 0)\{\
+						exitTargetAttack();\
+					\}\
+					//Exits skill\
+					else if(moveBox.getPointerIndex() == 1)\{\
+						exitTargetSkill();\
+					\}\
+					//Exit inv\
+					else if(moveBox.getPointerIndex() == 2)\{\
+						exitTargetItem();\
+					\}\
+				\}\
+				else if(isSkillChoosing)\{\
+					exitSkillSelect();\
+				\}\
+				else if(isItemChoosing)\{\
+					exitItemSelect();\
+				\}\
+				else\{\
+					exitMoveSelect();\
+				\}\
+			\}\
+			//Go to the previous player select\
+			else if(playerIndex > 0)\{\
+				\
+				playerIndex--;\
+				\
+				//Replace item if an item was used\
+				if(allyArray[playerIndex].currentMove == 2)\{\
+					itemList[allyArray[playerIndex].currentItemIndex].increment();\
+				\}\
+				\
+				//Set cooldown\
+				xCoolDown = 5;\
+			\}\
+			\
+		\}\
+	\}\
+\}\
+\
+//Exits from the moveSelection menu\
+function exitMoveSelect():void\{\
+	moveBox.resetItems();\
+	battleLayer.removeChild(moveBox);\
+				\
+	xCoolDown = 5;\
+	isPlayerSelected = false;\
+				\
+	//Destory stat box\
+	battleLayer.removeChild(statBox);\
+\}\
+//Exits skill select menu\
+function exitSkillSelect():void\{\
+	skillBox.resetItems();\
+	battleLayer.removeChild(skillBox);\
+				\
+	xCoolDown = 5;\
+	isSkillChoosing = false;\
+	moveBox.freezePointer = false;\
+\}\
+//Exits item select menu\
+function exitItemSelect():void\{\
+	battleInvMenu.resetItems();\
+	battleLayer.removeChild(battleInvMenu);\
+				\
+	xCoolDown = 5;\
+	isItemChoosing = false;\
+	moveBox.freezePointer = false;\
+\}\
+//Exits enemy target menu\
+function exitTargetAttack():void\{\
+	targetEnemyBox.resetItems();\
+	battleLayer.removeChild(targetEnemyBox);\
+				\
+	xCoolDown = 5;\
+	isTargetChoosing = false;\
+	moveBox.freezePointer = false;\
+\}\
+function exitTargetSkill():void\{\
+	targetEnemyBox.resetItems();\
+	battleLayer.removeChild(targetEnemyBox);\
+				\
+	xCoolDown = 5;\
+	isTargetChoosing = false;\
+	skillBox.freezePointer = false;\
+\}\
+//Exits ally target menu\
+function exitTargetItem():void\{\
+	targetAllyBox.resetItems();\
+	battleLayer.removeChild(targetAllyBox);\
+				\
+	xCoolDown = 5;\
+	isTargetChoosing = false;\
+	battleInvMenu.freezePointer = false;\
+\}\
+\
+//Executes when the round is ready\
+function checkRound(event:Event):void\{\
+	\
+	//trace("bmode: " + inBattleMode + "\\n"+\
+		//  "roundgo: " + roundGoing);\
+	\
+	if(inBattleMode)\{\
+		//Goes after last player select\
+		if(playerIndex == allyArray.length && !roundGoing && !isPlayerSelected)\{\
+			roundReady = true;\
+			\
+			//Sets player pointer back at top\
+			playerIndex = 0;\
+		\}\
+		\
+		\
+		\
+		if(battleOrg.getEnemyNames() == null || battleOrg.getEnemyNames().length == 0 && !winReceived)\{\
+			wonBattle = true;\
+		\}\
+		\
+		//One time sets for round\
+		if(roundReady)\{\
+			roundReady = false;\
+			\
+			//Increments round\
+			roundNum++;\
+			\
+			//Speed sort\
+			battleOrg.sortBySpeed();\
+			\
+			//Initiates round\
+			roundGoing = true;\
+			\
+			//Freezes pointer\
+			playerSelect.freezePointer = true;\
+			\
+			//Removes items that are -  or 0\
+			for(var i:int = 0; i < itemList.length; i++)\{\
+				if(itemList[i].getNum() == 0)\{\
+					\
+					removeInvItem(i);\
+					i--;\
+					\
+				\}\
+			\}\
+		\}\
+		\
+		\
+		\
+		else if(battleOrg.allArray == null || battleOrg.allArray.length == 0 && !wonBattle)\{\
+			roundGoing = false;\
+		\}\
+		else if(wonBattle)\{\
+			winReceived = true;\
+			wonBattle = false;\
+			\
+			trace(wonBattle);\
+			\
+			fighterChosen = false;\
+			roundGoing = false;\
+			winBattle();\
+		\}\
+		\
+		\
+		else if(roundGoing)\{\
+			//Chooses next fighter\
+			if(!fighterChosen)\{\
+				goingFighter = battleOrg.getNextFighter();\
+				fighterChosen = true;\
+				\
+				//Executes move\
+//Attack------------------------------------------------------------------------------------\
+				if(goingFighter.currentMove == 0 && enemyArray.length > 0 && aliveAllies.length > 0)\{\
+					\
+					if(goingFighter.isAlly)\{\
+						//FAILSAFE: chooses a random target if not chosen\
+						if(goingFighter.target.isDead && enemyArray.length > 0 && aliveAllies.length > 0)\{\
+							goingFighter.target = enemyArray[Math.floor(Math.random() * enemyArray.length)]\
+						\}\
+					\}\
+					else\{\
+						//Pick random target for enemy\
+						goingFighter.target = battleOrg.getAliveAllies()[Math.floor(Math.random() * battleOrg.getAliveAllies().length)];\
+					\}\
+					\
+					turnOnTextBox(goingFighter.attackFoe());\
+					\
+				\}\
+//Skill------------------------------------------------------------------------------------\
+				else if(goingFighter.currentMove == 1 && enemyArray.length > 0 && aliveAllies.length > 0)\{\
+					\
+					//FAILSAFE: chooses a random target if not chosen\
+					if(goingFighter.target.isDead && enemyArray.length > 0 && aliveAllies.length > 0)\{\
+						goingFighter.target = enemyArray[Math.floor(Math.random() * enemyArray.length)]\
+					\}\
+					\
+					turnOnTextBox(goingFighter.useSkill());\
+				\}\
+//Item------------------------------------------------------------------------------------\
+				else if(goingFighter.currentMove == 2 && enemyArray.length > 0 && aliveAllies.length > 0)\{\
+					//Chooses method for item\
+					if(goingFighter.currentItem is Potion)\{\
+						turnOnTextBox(goingFighter.usePotion());\
+					\}\
+				\}\
+				//Replaces unused items\
+				else if(goingFighter.currentMove == 2)\{\
+					goingFighter.currentItem.increment();\
+				\}\
+//Run------------------------------------------------------------------------------------\
+				else if(goingFighter.currentMove == 3 && enemyArray.length > 0 && aliveAllies.length > 0)\{\
+					turnOnTextBox(goingFighter.tryRun());\
+					if(goingFighter.isRanAway)\{\
+						goingFighter.isRanAway = false;\
+						runFromBattle = true;\
+					\}\
+				\}\
+				\
+				else\{\
+					turnOnTextBox(new Array(goingFighter.getName() + " is loafing..."));\
+				\}\
+				\
+				/*\
+				//If all enemies are dead\
+				if(battleOrg.getEnemyNames().length == 0)\{\
+							\
+					fighterChosen = false;\
+					roundGoing = false;\
+					winBattle();\
+					trace("WIN");\
+							\
+				\}\
+				*/\
+				\
+				trace(aliveAllies)\
+				\
+				//If ran from battle\
+				if(runFromBattle)\{\
+					runFromBattle = false;\
+					\
+					fighterChosen = false;\
+					roundGoing = false;\
+					escapeBattle();\
+				\}\
+				\
+				\
+			\}\
+			\
+			\
+		\}\
+	\}\
+\}\
+\
+\
+//Removes dead enemies\
+function removeEnemies():void\{\
+	//Removes dead enemies\
+	for(var i:int = 0; i < enemyArray.length; i++)\{\
+		if(enemyArray[i].isDead)\{\
+			\
+			enemyArray[i].canPlayDeath = true;\
+			\
+			removeFighter(i, enemyArray);\
+			i--;\
+		\}\
+	\}\
+	\
+	//Resets enemy target boxes\
+	targetEnemyBox = new SelectBox(battleOrg.getEnemyNames());\
+	targetEnemyBox.x = 50;\
+	targetEnemyBox.y = 130;\
+	\
+\}\
+//Removes dead allies\
+function removeAllies():void\{\
+	\
+	//Finds dead allies dead allies\
+	for(var j:int = 0; j < aliveAllies.length; j++)\{\
+		if(aliveAllies[j].isDead)\{\
+			removeFighter(j, aliveAllies);\
+			j--;\
+		\}\
+	\}\
+\}\
+\
+//Removes fighter\
+function removeFighter(n:int, a:Array):void\{\
+	for(var i:int = n; i < a.length - 1; i++)\{\
+		a[i] = a[i + 1];\
+	\}\
+	//Removes last item\
+	a.pop();\
+\}\
+\
+//Code to win battle\
+function winBattle():void\{\
+	\
+	selectCoolDown = 10;\
+	zCoolDown = 10;\
+	\
+	//Replaces unused items\
+	for(var i:int = 0; i < battleOrg.allArray.length; i++)\{\
+		if(battleOrg.allArray[i].currentMove == 2)\{\
+			battleOrg.allArray[i].currentItem.increment();\
+		\}\
+	\}\
+	\
+	isEndBattle = true;\
+	turnOnTextBox(new Array("YOU WIN"));\
+\}\
+//Code to escape battle\
+function escapeBattle():void\{\
+	\
+	selectCoolDown = 10;\
+	\
+	isEndBattle = true;\
+\}\
+//Code to lose battle\
+function loseBattle():void\{\
+	\
+	selectCoolDown = 25;\
+	zCoolDown = 25;\
+	\
+	isEndBattle = true;\
+	turnOnTextBox(new Array("Everyone died...", "You lost..."));\
+\}\
+\
+//Set up enemy display\
+\
+function setUpEnemyDisp():void\{\
+	for(var i:int = 0; i < enemyArray.length; i++)\{\
+		eneDispArray.push(new EnemyDisplay(enemyArray[i]));\
+		eneDispArray[i].x = 200 + 200 * i;\
+		eneDispArray[i].y = 200;\
+		battleLayer.addChild(eneDispArray[i]);\
+	\}\
+\}\
+function removeAllEnemyDisp():void\{\
+	for(var i:int = 0; i < eneDispArray.length; i++)\{\
+		battleLayer.removeChild(eneDispArray[i]);\
+	\}\
+\}\
+\
+stage.addEventListener(Event.ENTER_FRAME, checkMoveBox);\
+stage.addEventListener(Event.ENTER_FRAME, checkRound);\
+\
+playerCanMove = true;}

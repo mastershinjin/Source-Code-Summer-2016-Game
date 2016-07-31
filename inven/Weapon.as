@@ -1,0 +1,1 @@
+﻿package inven{		public class Weapon extends Equipment{		public function Weapon(nm:String, n:int, s:Array) {			super(nm, n, s)		}	}	}

@@ -1,0 +1,1 @@
+﻿package inven{		public class Armor extends Equipment{		public function Armor(nm:String, n:int, s:Array) {			super(nm, n, s)		}	}	}

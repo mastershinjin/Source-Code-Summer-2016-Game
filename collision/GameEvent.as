@@ -1,0 +1,1 @@
+﻿package collision {		public class GameEvent {		private var isEventHappen;		public function GameEvent(val:Boolean = false) {			isEventHappen = val;		}				public function setEvent(val:Boolean):void{			isEventHappen = val;		}		public function getEvent():Boolean{			return isEventHappen;		}	}	}

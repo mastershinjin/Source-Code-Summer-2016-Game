@@ -1,0 +1,493 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 \
+import collision.BoxCollider;\
+\
+//MOVEMENT and TEXTBOX\
+\
+//stop();\
+\
+var player:Player = new Player();\
+player.x = 250;\
+player.y = 200;\
+player.scaleX = 2;\
+player.scaleY = 2;\
+collideLayer.addChild(player)\
+\
+//---------------------------------------------------------------------------\
+\
+var upDown:Boolean = false;\
+var rightDown:Boolean = false;\
+var downDown:Boolean = false;\
+var leftDown:Boolean = false;\
+\
+var zDown:Boolean = false;\
+var xDown:Boolean = false;\
+var qDown:Boolean = false;\
+\
+var xCoolDown:int = 0;\
+\
+//Movement variables\
+var xDir:int = 0;\
+var yDir:int = 0;\
+\
+var compassDir:int = 1;\
+var prevDir:int = 1;\
+\
+var playerCanMove:Boolean = true;\
+const STEP:int = 5;\
+\
+var isPlayingSprite:Boolean = false;\
+\
+//Text box variables\
+var isPlayingText:Boolean = false;\
+var speechArray:Array\
+var textIndex:int\
+var arrayIndex:int\
+var zCoolDown:int = 0;\
+var textBoxCoolDown:int = 0;\
+\
+\
+//Inventory interaction stuff\
+var qCoolDown:int = 0;\
+var pointerCoolDown:int = 0;\
+var isInvUp:Boolean = false;\
+\
+var choiceBoxCoolDown:int = 0;\
+\
+//Area variables\
+var currArea:String = "mountView";\
+var prevArea:String = "mountView";\
+\
+var properPlayerPosition:int = compassDir;\
+\
+//Battle variables\
+var inBattleMode:Boolean = false;\
+var selectCoolDown:int = 0;\
+var enemyTurn:Boolean = false;\
+\
+var areaIsHostile:Boolean = false;\
+//Higher number = lesser encounter rate\
+const ENCOUNTER_CHANCE:int = 100;\
+\
+//Checks when keys are down\
+function checkKeysDown(event:KeyboardEvent):void\{\
+	\
+	if(event.keyCode == 38)\{\
+		upDown = true;\
+	\}\
+	if(event.keyCode == 39)\{\
+		rightDown = true;\
+	\}\
+	if(event.keyCode == 40)\{\
+		downDown = true;\
+	\}\
+	if(event.keyCode == 37)\{\
+		leftDown = true;\
+	\}\
+	if(event.keyCode == 90)\{\
+		zDown = true;\
+	\}\
+	if(event.keyCode == 88)\{\
+		xDown = true;\
+	\}\
+	if(event.keyCode == 81)\{\
+		qDown = true;\
+	\}\
+\}\
+//Checks when keys are up\
+function checkKeysUp(event:KeyboardEvent):void\{\
+	if(event.keyCode == 38)\{\
+		upDown = false;\
+	\}\
+	if(event.keyCode == 39)\{\
+		rightDown = false;\
+	\}\
+	if(event.keyCode == 40)\{\
+		downDown = false;\
+	\}\
+	if(event.keyCode == 37)\{\
+		leftDown = false;\
+	\}\
+	if(event.keyCode == 90)\{\
+		zDown = false;\
+	\}\
+	if(event.keyCode == 88)\{\
+		xDown = false;\
+	\}\
+	if(event.keyCode == 81)\{\
+		qDown = false;\
+	\}\
+\}\
+\
+//Cools down for buttons and text\
+function setCoolDown(event:Event):void\{\
+	\
+	//Sets cool down for z button\
+	if(zCoolDown <= 0)\{\
+		zCoolDown = 0;\
+	\}\
+	else\{\
+		zCoolDown--;\
+	\}\
+	\
+	//Sets cool down for x button\
+	if(xCoolDown <= 0)\{\
+		xCoolDown = 0;\
+	\}\
+	else\{\
+		xCoolDown--;\
+	\}\
+	\
+	//Sets cool down for q button\
+	if(qCoolDown <= 0)\{\
+		qCoolDown = 0;\
+	\}\
+	else\{\
+		qCoolDown--;\
+	\}\
+	\
+	//Sets cool down for text box\
+	if(textBoxCoolDown <= 0)\{\
+		textBoxCoolDown = 0;\
+	\}\
+	else\{\
+		textBoxCoolDown--;\
+	\}\
+	\
+	//Sets cool down for inventory pointer\
+	if(pointerCoolDown <= 0)\{\
+		pointerCoolDown = 0;\
+	\}\
+	else\{\
+		pointerCoolDown--;\
+	\}\
+	\
+	//Sets cool down for battle move selection\
+	if(selectCoolDown <= 0)\{\
+		selectCoolDown = 0;\
+	\}\
+	else\{\
+		selectCoolDown--;\
+	\}\
+	\
+	//Sets cool down for NPC choice boxes\
+	if(choiceBoxCoolDown <= 0)\{\
+		choiceBoxCoolDown = 0;\
+	\}\
+	else\{\
+		choiceBoxCoolDown--;\
+	\}\
+\}\
+\
+//Updates player movement data\
+function updatePlayer(event:Event)\{\
+	if(playerCanMove)\{\
+		if(upDown)\{\
+			moveBoxes(0, STEP);\
+			yDir = -1;\
+			prevDir = compassDir;\
+			compassDir = 1;\
+			\
+			//Battle encounter\
+			if(areaIsHostile && Math.floor(Math.random() * ENCOUNTER_CHANCE) == 0)\{\
+				gotoBattle();\
+			\}\
+		\}\
+		else if(downDown)\{\
+			moveBoxes(0, -STEP);\
+			yDir = 1;\
+			prevDir = compassDir;\
+			compassDir = 3;\
+			\
+			//Battle encounter\
+			if(areaIsHostile && Math.floor(Math.random() * ENCOUNTER_CHANCE) == 0)\{\
+				gotoBattle();\
+			\}\
+		\}\
+		\
+		else if(rightDown)\{\
+			moveBoxes(-STEP, 0);\
+			xDir = 1;\
+			prevDir = compassDir;\
+			compassDir = 2;\
+			\
+			//Battle encounter\
+			if(areaIsHostile && Math.floor(Math.random() * ENCOUNTER_CHANCE) == 0)\{\
+				gotoBattle();\
+			\}\
+		\}\
+		\
+		else if(leftDown)\{\
+			moveBoxes(STEP, 0);\
+			xDir = -1;\
+			prevDir = compassDir;\
+			compassDir = 4;\
+			\
+			//Battle encounter\
+			if(areaIsHostile && Math.floor(Math.random() * ENCOUNTER_CHANCE) == 0)\{\
+				gotoBattle();\
+			\}\
+		\}\
+	\}\
+	\
+	//Updates playingSprite if previous and current directions are different\
+	if(compassDir != prevDir)\{\
+		isPlayingSprite = false;\
+	\}\
+	\
+	\
+	//Updates player sprite\
+	//Only updates when not playing text\
+	if(playerCanMove)\{\
+		\
+		if(compassDir == 1 && !isPlayingSprite && upDown)\{\
+			isPlayingSprite = true;\
+			player.gotoAndPlay("up");\
+		\}\
+		else if(compassDir == 1 && !upDown)\{\
+			isPlayingSprite = false;\
+			player.gotoAndStop("up");\
+		\}\
+		\
+		if(compassDir == 2 && !isPlayingSprite && rightDown)\{\
+			isPlayingSprite = true;\
+			player.gotoAndPlay("right");\
+		\}\
+		else if(compassDir == 2 && !rightDown)\{\
+			isPlayingSprite = false;\
+			player.gotoAndStop("right");\
+		\}\
+		\
+		if(compassDir == 3 && !isPlayingSprite && downDown)\{\
+			isPlayingSprite = true;\
+			player.gotoAndPlay("down");\
+		\}\
+		else if(compassDir == 3 && !downDown)\{\
+			isPlayingSprite = false;\
+			player.gotoAndStop("down");\
+		\}\
+		\
+		if(compassDir == 4 && !isPlayingSprite && leftDown)\{\
+			isPlayingSprite = true;\
+			player.gotoAndPlay("left");\
+		\}\
+		else if(compassDir == 4 && !leftDown)\{\
+			isPlayingSprite = false;\
+			player.gotoAndStop("left");\
+		\}\
+	\}\
+	else\{\
+		if(compassDir == 1)\{\
+			player.gotoAndStop("up");\
+		\}\
+		else if(compassDir == 2)\{\
+			player.gotoAndStop("right");\
+		\}\
+		else if(compassDir == 3)\{\
+			player.gotoAndStop("down");\
+		\}\
+		else if(compassDir == 4)\{\
+			player.gotoAndStop("left");\
+		\}\
+	\}\
+	\
+\}\
+\
+function updateBG(event:Event):void\{\
+	textureBG.x = boxArray[0].x;\
+	textureBG.y = boxArray[0].y;\
+\}\
+\
+//Adds boxes to the collision layer\
+function addBoxes():void\{\
+	for(var i:int = 0; i < boxArray.length; i++)\{\
+		collideLayer.addChild(boxArray[i]);\
+	\}\
+\}\
+\
+//Removes boxes from the collision layer\
+function removeBoxes():void\{\
+	for(var i:int = 0; i < boxArray.length; i++)\{\
+		collideLayer.removeChild(boxArray[i]);\
+	\}\
+\}\
+\
+//Removes boxes from the stage\
+function moveBoxes(moveX:int, moveY:int):void\{\
+	for(var i:int; i < boxArray.length; i++)\{\
+		boxArray[i].x += moveX;\
+		boxArray[i].y += moveY;\
+		\
+		//Push back if boxes cannot move\
+		if(!canAllMoveUp())\{\
+			boxArray[i].y -= STEP;\
+		\}\
+		else if(!canAllMoveRight())\{\
+			boxArray[i].x += STEP;\
+		\}\
+		else if(!canAllMoveDown())\{\
+			boxArray[i].y += STEP;\
+		\}\
+		else if(!canAllMoveLeft())\{\
+			boxArray[i].x -= STEP;\
+		\}\
+	\}\
+\}\
+\
+//Checks if all boxes can move in a direction\
+function canAllMoveUp():Boolean\{\
+	//Checks if boxes are movable\
+	for(var i:int = 0; i < boxArray.length;i++)\{\
+		if(!boxArray[i].canMoveUp)\{\
+			return false;\
+		\}\
+	\}\
+	\
+	return true;\
+\}\
+function canAllMoveRight():Boolean\{\
+	//Checks if boxes are movable\
+	for(var i:int = 0; i < boxArray.length;i++)\{\
+		if(!boxArray[i].canMoveRight)\{\
+			return false;\
+		\}\
+	\}\
+	\
+	return true;\
+\}\
+function canAllMoveDown():Boolean\{\
+	//Checks if boxes are movable\
+	for(var i:int = 0; i < boxArray.length;i++)\{\
+		if(!boxArray[i].canMoveDown)\{\
+			return false;\
+		\}\
+	\}\
+	\
+	return true;\
+\}\
+function canAllMoveLeft():Boolean\{\
+	//Checks if boxes are movable\
+	for(var i:int = 0; i < boxArray.length;i++)\{\
+		if(!boxArray[i].canMoveLeft)\{\
+			return false;\
+		\}\
+	\}\
+	\
+	return true;\
+\}\
+\
+//Increments box x and y by specific amount\
+function incrBoxCoords(xVal:int, yVal:int):void\{\
+	for(var i:int = 0; i < boxArray.length;i++)\{\
+		boxArray[i].x += xVal;\
+		boxArray[i].y += yVal;\
+	\}\
+\}\
+\
+/////////////////////////////////////////////\
+//---------TEXT BOX STUFF------------------//\
+/////////////////////////////////////////////\
+\
+//Turns textBox on\
+function turnOnTextBox(s:Array):void\{\
+	textBoxBacking.gotoAndStop(2);\
+	\
+	speechArray = s;\
+	textIndex = 0;\
+	arrayIndex = 0;\
+	isPlayingText = true;\
+	playerCanMove = false;\
+\}\
+\
+//Moves text\
+function moveText(event:Event):void\{\
+	\
+	//If textbox is on\
+	if(isPlayingText)\{\
+		\
+		//Scroll text until the end of the string\
+		if(arrayIndex < speechArray.length && textIndex <= speechArray[arrayIndex].length)\{\
+			textBox.text = speechArray[arrayIndex].substring(0, textIndex);\
+			textIndex++;\
+		\}\
+		//Otherwise check if user has pressed z and time has cooled down and there is more text\
+		else if(zDown && zCoolDown == 0 && arrayIndex < speechArray.length)\{\
+			textIndex = 0;\
+			arrayIndex++;\
+		\}\
+		//Otherwise turn off textBox\
+		else if(zDown && zCoolDown == 0)\{\
+			textBoxCoolDown = 10;\
+			\
+			textBoxBacking.gotoAndStop(1);\
+			textBox.text = "";\
+			\
+			isPlayingText = false;\
+			\
+//********************Special stuff for battle mode********************\
+			if(inBattleMode)\{\
+				\
+				\
+				//Code for while round is going\
+				if(roundGoing)\{\
+					battleOrg.allArray.pop();\
+					fighterChosen = false;\
+					\
+					selectCoolDown = 5;\
+				\}\
+				//Code for if battle is done\
+				else if(isEndBattle)\{\
+					returnFromBattle();\
+				\}\
+				\
+				//Removes any dead fighters\
+				removeEnemies();\
+				removeAllies();\
+				\
+				//Else if party is dead\
+				if(aliveAllies.length == 0 && roundGoing)\{\
+					\
+					fighterChosen = false;\
+					roundGoing = false;\
+					lostBattle = true;\
+					loseBattle();\
+			\
+				\}\
+			\}\
+			\
+			\
+			else\{\
+				playerCanMove = true;\
+			\}\
+			\
+		\}\
+	\}\
+\}\
+\
+\
+stage.addEventListener(KeyboardEvent.KEY_DOWN, checkKeysDown);\
+stage.addEventListener(KeyboardEvent.KEY_UP, checkKeysUp);\
+\
+stage.addEventListener(Event.ENTER_FRAME, updatePlayer)\
+stage.addEventListener(Event.ENTER_FRAME, updateBG);\
+\
+stage.addEventListener(Event.ENTER_FRAME, moveText);\
+stage.addEventListener(Event.ENTER_FRAME, setCoolDown);\
+\
+//Sets default player sprite\
+player.gotoAndStop("down");\
+\
+//Hides text box\
+textBoxBacking.gotoAndStop(1);\
+\
+//Hides overlay\
+overlayBlack.gotoAndStop("fadeIn");\
+\
+//Adds boxes to stage\
+var boxArray:Array = new Array(new BoxCollider(0, 0, 0, 0));\
+addBoxes();}

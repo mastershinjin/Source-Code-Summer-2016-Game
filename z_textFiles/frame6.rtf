@@ -1,0 +1,234 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 import inven.SelectBox;\
+import inven.Equipment;\
+import battle.OverworldStatBox;\
+\
+//Set up inventory\
+\
+\
+//Inventory variables\
+							   \
+var invMenu:Inventory = new Inventory(itemList);\
+\
+var overworldPlayerSelect:SelectBox = new SelectBox(battleOrg.getAllyNames());\
+var overworldIsPlayerSelect:Boolean = false;\
+\
+invMenu.x = 81;\
+invMenu.y = 32;\
+\
+//Inventory select box variables\
+\
+var invSelect:SelectBox = new SelectBox(new Array("Use", "Toss", "Equip", "Back"));\
+\
+invSelect.x = 400;\
+invSelect.y = 210;\
+\
+var isSelectUp:Boolean = false;\
+\
+\
+var overworldStats:OverworldStatBox = new OverworldStatBox(allyArray[0]);\
+overworldStats.x = 200;\
+\
+//----------------------------------------------------------------------------\
+\
+//Updates inventory\
+function invCont(event:Event):void\{\
+	\
+	//Locks player movement if player is still in inventory\
+	if(isInvUp)\{\
+		playerCanMove = false;\
+	\}\
+	\
+	//Brings up player selector\
+	if(!isInvUp)\{\
+		if(qDown && qCoolDown == 0 && !overworldIsPlayerSelect && !isPlayingText && textBoxCoolDown == 0 && !inBattleMode)\{\
+			\
+			qCoolDown = 5;\
+			\
+			//Opens player select\
+			overworldIsPlayerSelect = true;\
+			playerCanMove = false;\
+			overworldPlayerSelect.setUpTextBoxes();\
+			invLayer.addChild(overworldPlayerSelect);\
+			\
+			//Display player stats\
+			invLayer.addChild(overworldStats);\
+			\
+		\}\
+		else if(qDown && qCoolDown == 0 && overworldIsPlayerSelect && !isPlayingText && textBoxCoolDown == 0)\{\
+			\
+			qCoolDown = 5;\
+			\
+			//Close player select\
+			overworldIsPlayerSelect = false;\
+			playerCanMove = true;\
+			overworldPlayerSelect.resetItems();\
+			invLayer.removeChild(overworldPlayerSelect);\
+			\
+			//Close player stats\
+			invLayer.removeChild(overworldStats);\
+			\
+			//Fixes player movement\
+			isPlayingSprite = false;\
+			\
+		\}\
+	\}\
+	\
+	//Bring up inventory\
+	if(overworldIsPlayerSelect)\{\
+		if(zDown && zCoolDown == 0 && !isInvUp && !isPlayingText && textBoxCoolDown == 0)\{\
+			zCoolDown = 5;\
+			\
+			isInvUp = true;\
+			overworldPlayerSelect.freezePointer = true;\
+			invMenu.setUpTextBoxes();\
+			invLayer.addChild(invMenu);\
+		\}\
+		else if(xDown && xCoolDown == 0 && isInvUp && !isSelectUp && !isPlayingText && textBoxCoolDown == 0)\{\
+			xCoolDown = 5;\
+			\
+			overworldPlayerSelect.freezePointer = false;\
+			isInvUp = false;\
+			invMenu.resetItems();\
+			invLayer.removeChild(invMenu);\
+		\}\
+	\}\
+	\
+	//Brings up inventory select box\
+	if(zDown &&zCoolDown == 0 && !isSelectUp && isInvUp && !isPlayingText && textBoxCoolDown == 0)\{\
+		zCoolDown = 5;\
+				\
+		isSelectUp = true;\
+		invSelect.setUpTextBoxes();\
+		invLayer.addChild(invSelect);\
+	\}\
+	else if(zDown && zCoolDown == 0 && isSelectUp && !isPlayingText && textBoxCoolDown == 0)\{\
+		\
+		//Checks if the item is valid\
+		if(invMenu.getCurrentItemName() != "")\{\
+			\
+			//Processes inventory data for use\
+			if(invSelect.getPointerIndex() == 0)\{\
+				turnOnTextBox(new Array("Used 1 " + invMenu.getCurrentItemName()));\
+				\
+				//****************************CODE TO USE ITEM****************************\
+				if(invMenu.getCurrentItem() is Potion)\{\
+					\
+					var tempPotion:Potion = Potion(invMenu.getCurrentItem());\
+					\
+					//Checks if target is dead\
+					if(allyArray[overworldPlayerSelect.getPointerIndex()].isDead)\{\
+						//Fails if not revival\
+						if(!tempPotion.getRevive())\{\
+							turnOnTextBox(new Array("Target is dead"));\
+						\}\
+						//Otherwise revive and heal\
+						else\{\
+							turnOnTextBox(allyArray[overworldPlayerSelect.getPointerIndex()].heal(tempPotion));\
+						\}\
+					\}\
+					//Heal if not dead\
+					else\{\
+						//Restore HP\
+						turnOnTextBox(allyArray[overworldPlayerSelect.getPointerIndex()].heal(tempPotion));\
+					\}\
+					\
+				\}\
+				\
+				//If item is not usable\
+				else\{\
+					turnOnTextBox(new Array("Cannot use " + invMenu.getCurrentItemName()));\
+					itemList[invMenu.getPointerIndex()].increment();\
+				\}\
+				\
+				itemList[invMenu.getPointerIndex()].decrement();\
+				\
+			\}\
+			//****************************CODE TO TOSS ITEM****************************\
+			else if(invSelect.getPointerIndex() == 1)\{\
+				turnOnTextBox(new Array("Tossed 1 " + invMenu.getCurrentItemName()));\
+				\
+				itemList[invMenu.getPointerIndex()].decrement();\
+			\}\
+			else if(invSelect.getPointerIndex() == 2)\{\
+				\
+				//****************************CODE TO EQUIP ITEM****************************\
+				if(invMenu.getCurrentItem() is Equipment)\{\
+					trace(invMenu.getCurrentItemName());\
+					\
+					turnOnTextBox(allyArray[overworldPlayerSelect.getPointerIndex()].equip(invMenu.getCurrentItem()));\
+				\}\
+				\
+				//If item is not equipable\
+				else\{\
+					turnOnTextBox(new Array("Cannot equip " + invMenu.getCurrentItemName()));\
+					itemList[invMenu.getPointerIndex()].increment();\
+				\}\
+				\
+				itemList[invMenu.getPointerIndex()].decrement();\
+			\}\
+			\
+			//Removes items that are -  or 0\
+			if(itemList[invMenu.getPointerIndex()].getNum() == 0)\{\
+				removeInvItem(invMenu.getPointerIndex());\
+			\}\
+		\}\
+		else\{\
+				if(invSelect.getPointerIndex() != 3)\{\
+					turnOnTextBox(new Array("No item", "Sorry!", "Try again later."));\
+				\}\
+		\}\
+				\
+		zCoolDown = 5;\
+		\
+		isSelectUp = false;\
+		invSelect.resetItems();\
+		invLayer.removeChild(invSelect);\
+	\}\
+	\
+	else if(xDown && xCoolDown == 0 && isSelectUp && !isPlayingText && textBoxCoolDown == 0)\{\
+		\
+		xCoolDown = 5;\
+		\
+		isSelectUp = false;\
+		invSelect.resetItems();\
+		invLayer.removeChild(invSelect);\
+	\}\
+\}\
+\
+\
+function removeInvItem(n:int):void\{\
+	for(var i:int = n; i < itemList.length - 1; i++)\{\
+		itemList[i] = itemList[i + 1];\
+	\}\
+	//Removes last item\
+	itemList.pop();\
+\}\
+\
+function addInvItem(item:Item):Boolean\{\
+	\
+	//Search through list for item\
+	for(var i:int = 0; i < itemList.length; i++)\{\
+		//Add to quantity if in list\
+		if(item.getName() == itemList[i].getName())\{\
+			itemList[i].increase(item.getNum());\
+			return true;\
+		\}\
+	\}\
+	\
+	//Else add to bottom\
+	if(itemList.length < 10)\{\
+		itemList.push(item);\
+		return true;\
+	\}\
+	else\{\
+		return false;\
+	\}\
+\}\
+\
+stage.addEventListener(Event.ENTER_FRAME, invCont);}
